@@ -60,6 +60,16 @@
     </target>
 -->
 
+    <property name="clojure-jar" location="libs/clojure.jar"/>
+
+    <target name="-post-compile">
+      <java classname="clojure.lang.Compile"
+            classpathref="android.target.classpath"
+            classpath="${clojure-jar}:${extensible.classpath}:${source.absolute.dir}:${out.classes.absolute.dir}">
+        <sysproperty key="clojure.compile.path" value="${out.classes.absolute.dir}"/>
+        <arg value="com.berthartm.android.lectionary.lectionary"/>
+      </java>
+    </target>
 
     <!-- Execute the Android Setup task that will setup some properties
          specific to the target, and import the build rules files.
