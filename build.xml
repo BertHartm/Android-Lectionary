@@ -60,7 +60,7 @@
      </target>
      -->
 
-  <property name="clojure-jar" location="libs/clojure.jar"/>
+  <property name="clojure-jar" location="libs/clojure-1.2.0.jar"/>
   <property name="clj-android-jar" location="libs/clj-android.jar"/>
 
   <target name="-post-compile">

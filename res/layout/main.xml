@@ -4,11 +4,21 @@
 	      android:layout_width="fill_parent"
 	      android:layout_height="fill_parent"
 	      >
+  <DatePicker
+     android:id="@+id/main_date"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     />
+  <Button
+     android:id="@+id/date_button"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     android:text="@string/update"
+     />
   <TextView
      android:id="@+id/holiday_info"
      android:layout_width="fill_parent" 
      android:layout_height="wrap_content" 
-     android:text="this is bad"
      />
 </LinearLayout>
 
