@@ -1,4 +1,4 @@
-(ns com.berthartm.android.lectionary.LectionaryCalcs
+(ns com.berthartm.android.LectionaryCalcs
   (:gen-class
    :methods [[Easter [Integer] java.util.GregorianCalendar]
 	     [ChristTheKing [Integer] java.util.GregorianCalendar]]))
