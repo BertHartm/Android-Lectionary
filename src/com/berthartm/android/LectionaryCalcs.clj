@@ -26,19 +26,21 @@
 			    (cond (> ES 31) (new java.util.GregorianCalendar year 3 (- ES 31)) ; April
 				  true (new java.util.GregorianCalendar year 2 ES)))) ; March
 
-(defn -ChristTheKing [this year] (let [fifthWeek (new java.util.GregorianCalendar year 10 20)]
-				   (let [DoW (.get fifthWeek java.util.GregorianCalendar/DAY_OF_WEEK)]
-				     (cond (= DoW 1) fifthWeek ; Sunday the 20th, return that
-					   true (doto fifthWeek (.add java.util.GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
-					   ))))
+(defn -ChristTheKing [this year]
+  (let [fifthWeek (new java.util.GregorianCalendar year 10 20)]
+    (let [DoW (.get fifthWeek java.util.GregorianCalendar/DAY_OF_WEEK)]
+      (cond (= DoW 1) fifthWeek ; Sunday the 20th, return that
+	    true (doto fifthWeek (.add java.util.GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
+	    ))))
 
 (defn -liturgicalYear [this date]
-  (let [year (.get java.util.GregorianCalendar/YEAR)]
+  (let [year (.get date java.util.GregorianCalendar/YEAR)]
     ; the first day of the new year is the Wed. before ChristTheKing Sunday
-    (cond (< date (doto (-ChristTheKing this year) (.add java.util.GregorianCalendar/DATE -4)))
-	  (nth '(:A :B :C) (mod (- (.get date java.util.GregorianCalendar/YEAR) 1) 3))
+    (cond (.before date (doto (-ChristTheKing this year) (.add java.util.GregorianCalendar/DATE -4)))
+	  (nth '(:A :B :C) (mod (- year 1) 3))
 	  true ; else, we're that wednesday or after
-	  (nth '(:A :B :C) (mod (.get date java.util.GregorianCalendar/YEAR) 3)))))
+	  (nth '(:A :B :C) (mod year 3))
+	  )))
     
 ; to do the Christmas / Ordinary season Sunday shift, add / subtract the number of weeks, and find the next Sunday
 ; to go backwards (it's Sunday the X of Y), it's the ceiling of the # of weeks before, floor of the number of weeks after
