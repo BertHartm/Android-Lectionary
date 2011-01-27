@@ -1,7 +1,8 @@
 (ns com.berthartm.android.LectionaryCalcs
   (:gen-class
    :methods [[Easter [Integer] java.util.GregorianCalendar]
-	     [ChristTheKing [Integer] java.util.GregorianCalendar]]))
+	     [ChristTheKing [Integer] java.util.GregorianCalendar]
+	     [liturgicalYear [java.util.GregorianCalendar] clojure.lang.Keyword]]))
 
 ; Knuth's version of the Lilius and Clavius method of calculating Easter (post-1582)
 ; as found on tAOCP Volume 1 1.3.2 Question 14 (pp. 159 - 160 in my edition)
@@ -32,7 +33,7 @@
 					   ))))
 
 ; TODO
-;(defn LiturgicalYear [date] (mod (.get date java.util.GregorianCalendar/YEAR) 3) ; bad estimate for now
+(defn -liturgicalYear [this date] (nth '(:A :B :C) (mod (- (.get date java.util.GregorianCalendar/YEAR) 1) 3))) ; bad estimate for now
 ;(defn Between2Dates [current, start, end] (cond (and (> current start) (< current end)) true
 ;						true false))
 ;(defn LiturgicalSeason [date] )
