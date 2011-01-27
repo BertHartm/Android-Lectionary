@@ -32,11 +32,13 @@
 					   true (doto fifthWeek (.add java.util.GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
 					   ))))
 
-; TODO
-(defn -liturgicalYear [this date] (nth '(:A :B :C) (mod (- (.get date java.util.GregorianCalendar/YEAR) 1) 3))) ; bad estimate for now
-;(defn Between2Dates [current, start, end] (cond (and (> current start) (< current end)) true
-;						true false))
-;(defn LiturgicalSeason [date] )
-
+(defn -liturgicalYear [this date]
+  (let [year (.get java.util.GregorianCalendar/YEAR)]
+    ; the first day of the new year is the Wed. before ChristTheKing Sunday
+    (cond (< date (doto (-ChristTheKing this year) (.add java.util.GregorianCalendar/DATE -4)))
+	  (nth '(:A :B :C) (mod (- (.get date java.util.GregorianCalendar/YEAR) 1) 3))
+	  true ; else, we're that wednesday or after
+	  (nth '(:A :B :C) (mod (.get date java.util.GregorianCalendar/YEAR) 3)))))
+    
 ; to do the Christmas / Ordinary season Sunday shift, add / subtract the number of weeks, and find the next Sunday
 ; to go backwards (it's Sunday the X of Y), it's the ceiling of the # of weeks before, floor of the number of weeks after
