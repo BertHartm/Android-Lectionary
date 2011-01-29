@@ -20,28 +20,39 @@
 
 ; we understand only Christmas and Easter Seasons, define everything else
 ; Christmas is in weeks, Easter in days
-(def Advent '(Christmas -4))
-(def Epiphany '(Christmas 2))
-(def AshWednesday '(Easter -46))
-(def Transfiguration '(Easter -49))
-(def Lent '(Easter -42))
-(def Ascension '(Easter 40))
-(def PentecostSunday '(Easter 49))
-(def HolyTrinity '(Easter 56))
-(def Pentecost '(Christmas -30))
-(def ChristTheKing '(Christmas -5))
+(def Advent '(:Christmas -4))
+(def Epiphany '(:Christmas 2))
+(def AshWednesday '(:Easter -46))
+(def Transfiguration '(:Easter -49))
+(def Lent '(:Easter -42))
+(def Ascension '(:Easter 40))
+(def PentecostSunday '(:Easter 49))
+(def HolyTrinity '(:Easter 56))
+(def Pentecost '(:Christmas -30))
+(def ChristTheKing '(:Christmas -5))
+(def Jan27 '(:Date 1 27))
 
 (def bigList '(
-	       (:Date 1 27 :A "Awesome Day")
-	       (Advent 1 :A "First Sunday of Advent")
-	       (AshWednesday 0 :A "Ash Wednesday")
+	       ((:Date) 1 27 :A "Awesome Day")
+	       ((:Christmas -4) 1 :A "First Sunday of Advent")
+	       ((:Easter -49) 0 :A "Transfiguration")
 	       ))
 
 (defn applicableDay [liturgicalDay date]
-  (cond (and (= (first liturgicalDay) :Date)
+  (cond (and (= (ffirst liturgicalDay) :Date)
 	     (= (nth liturgicalDay 1) (+ (.get date java.util.GregorianCalendar/MONTH) 1))
 	     (= (nth liturgicalDay 2) (.get date java.util.GregorianCalendar/DAY_OF_MONTH))
 	     (or (= (nth liturgicalDay 3) :*) (= (nth liturgicalDay 3) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date))))
+	true
+	(and (= (ffirst liturgicalDay) :Easter) true
+	     (or (= (nth liturgicalDay 2) :*)
+		 (= (nth liturgicalDay 2) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date)))
+	     (.before (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date java.util.GregorianCalendar/YEAR)) (.add java.util.GregorianCalendar/DATE -50))
+		      date) ; transfiguration
+	     (.before date
+		      (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date java.util.GregorianCalendar/YEAR)) (.add java.util.GregorianCalendar/DATE 50))) ; pentecost
+	     (= (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date java.util.GregorianCalendar/YEAR)) (.add java.util.GregorianCalendar/DATE (+ (last (first liturgicalDay)) (nth liturgicalDay 1)))) date)
+	     )
 	true
 	true false))
 					 
