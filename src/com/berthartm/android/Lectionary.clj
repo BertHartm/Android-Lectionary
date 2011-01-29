@@ -2,13 +2,14 @@
    (:use clj-android)
    (:require com.berthartm.android.LectionaryCalcs)
    (:import (com.berthartm.android.Lectionary R$layout R$id))
+   (:import (java.util GregorianCalendar))
    )
 
 (defn calcHolidays [year] (let [LC (new com.berthartm.android.LectionaryCalcs)]
 			    (def easter (.Easter LC year))
-			    (def pentecost (doto (.Easter LC year) (.add java.util.GregorianCalendar/DATE 49))) ; 50th day of Easter
-			    (def ashWednesday (doto (.Easter LC year) (.add java.util.GregorianCalendar/DATE -46))) ; 40 days + 6 Sundays before Easter
-			    (def transfiguration (doto (.Easter LC year) (.add java.util.GregorianCalendar/DATE -49))) ; Sunday before Ash Wednesday
+			    (def pentecost (doto (.Easter LC year) (.add GregorianCalendar/DATE 49))) ; 50th day of Easter
+			    (def ashWednesday (doto (.Easter LC year) (.add GregorianCalendar/DATE -46))) ; 40 days + 6 Sundays before Easter
+			    (def transfiguration (doto (.Easter LC year) (.add GregorianCalendar/DATE -49))) ; Sunday before Ash Wednesday
 			    (def formatter (new java.text.SimpleDateFormat "MMM d"))
 			    (str "for " year
 				 "\nEaster is " (.format formatter (.getTime easter))
@@ -40,18 +41,18 @@
 
 (defn applicableDay [liturgicalDay date]
   (cond (and (= (ffirst liturgicalDay) :Date)
-	     (= (nth liturgicalDay 1) (+ (.get date java.util.GregorianCalendar/MONTH) 1))
-	     (= (nth liturgicalDay 2) (.get date java.util.GregorianCalendar/DAY_OF_MONTH))
+	     (= (nth liturgicalDay 1) (+ (.get date GregorianCalendar/MONTH) 1))
+	     (= (nth liturgicalDay 2) (.get date GregorianCalendar/DAY_OF_MONTH))
 	     (or (= (nth liturgicalDay 3) :*) (= (nth liturgicalDay 3) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date))))
 	true
 	(and (= (ffirst liturgicalDay) :Easter) true
 	     (or (= (nth liturgicalDay 2) :*)
 		 (= (nth liturgicalDay 2) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date)))
-	     (.before (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date java.util.GregorianCalendar/YEAR)) (.add java.util.GregorianCalendar/DATE -50))
+	     (.before (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE -50))
 		      date) ; transfiguration
 	     (.before date
-		      (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date java.util.GregorianCalendar/YEAR)) (.add java.util.GregorianCalendar/DATE 50))) ; pentecost
-	     (= (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date java.util.GregorianCalendar/YEAR)) (.add java.util.GregorianCalendar/DATE (+ (last (first liturgicalDay)) (nth liturgicalDay 1)))) date)
+		      (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE 50))) ; pentecost
+	     (= (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE (+ (last (first liturgicalDay)) (nth liturgicalDay 1)))) date)
 	     )
 	true
 	true false))
@@ -60,11 +61,11 @@
 (defactivity Main
   (:create (.setContentView context R$layout/main)
 	   (let [tv (view-by-id R$id/holiday_info) hol (view-by-id R$id/holiday_list)]
-	     (.setText tv (calcHolidays (.get (new java.util.GregorianCalendar) java.util.GregorianCalendar/YEAR)))
+	     (.setText tv (calcHolidays (.get (new GregorianCalendar) GregorianCalendar/YEAR)))
 	     (on-click (view-by-id R$id/date_button)
 		       (let [dp (view-by-id R$id/main_date)]
 			 (.setText tv (calcHolidays (.getYear dp)))
-			 (.setText hol (last (first (filter (fn [x] (applicableDay x (new java.util.GregorianCalendar (.getYear dp) (.getMonth dp) (.getDayOfMonth dp)))) bigList))))
+			 (.setText hol (last (first (filter (fn [possibleDay] (applicableDay possibleDay (new GregorianCalendar (.getYear dp) (.getMonth dp) (.getDayOfMonth dp)))) bigList))))
 			 )
 		       ))
 	   ))
