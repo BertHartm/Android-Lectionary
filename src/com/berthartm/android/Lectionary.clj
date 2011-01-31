@@ -35,24 +35,46 @@
 
 (def bigList '(
 	       ((:Date) 1 27 :A "Awesome Day")
-	       ((:Christmas -4) 1 :A "First Sunday of Advent")
+	       ((:Christmas -4) 1 0 :* "First Sunday of Advent")
+	       ((:Christmas 0) 1 0 :* "Christmas 1")
 	       ((:Easter -49) 0 :A "Transfiguration")
 	       ))
 
 (defn applicableDay [liturgicalDay date]
+  ; todo: let year, xmas, xmas DoW, liturgicalYear
   (cond (and (= (ffirst liturgicalDay) :Date)
 	     (= (nth liturgicalDay 1) (+ (.get date GregorianCalendar/MONTH) 1))
 	     (= (nth liturgicalDay 2) (.get date GregorianCalendar/DAY_OF_MONTH))
-	     (or (= (nth liturgicalDay 3) :*) (= (nth liturgicalDay 3) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date))))
+	     (or (= (nth liturgicalDay 3) :*)
+		 (= (nth liturgicalDay 3) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date))))
 	true
-	(and (= (ffirst liturgicalDay) :Easter) true
+	(and (= (ffirst liturgicalDay) :Easter)
 	     (or (= (nth liturgicalDay 2) :*)
 		 (= (nth liturgicalDay 2) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date)))
 	     (.before (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE -50))
-		      date) ; transfiguration
+		      date) ; transfiguration (day before)
 	     (.before date
-		      (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE 50))) ; pentecost
+		      (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE 50))) ; pentecost (day after)
 	     (= (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE (+ (last (first liturgicalDay)) (nth liturgicalDay 1)))) date)
+	     )
+	true
+	(and (= (ffirst liturgicalDay) :Christmas)
+	     (or (= (nth liturgicalDay 3) :*)
+		 (= (nth liturgicalDay 3) (.liturgicalYear (new com.berthartm.android.LectionaryCalcs) date)))
+	     (or (.before date
+			  (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE -49))) ; transfiguration
+		 (.before (doto (.Easter (new com.berthartm.android.LectionaryCalcs) (.get date GregorianCalendar/YEAR)) (.add GregorianCalendar/DATE 49)) ; pentecost
+			  date))
+	     (= (doto (new GregorianCalendar (.get date GregorianCalendar/YEAR) 11 25)
+		  (.add GregorianCalendar/DATE (+ (* 7 (+ (last (first liturgicalDay)) ; Seasonal week offset
+							  (second liturgicalDay))) ; this day's week offset
+						  (cond (= (.get (new GregorianCalendar (.get date GregorianCalendar/YEAR) 11 25) java.util.GregorianCalendar/DAY_OF_WEEK) 1)
+							-7
+							true
+							(- 1 (.get (new GregorianCalendar (.get date GregorianCalendar/YEAR) 11 25) java.util.GregorianCalendar/DAY_OF_WEEK))
+							)
+						  (nth liturgicalDay 2))))
+		date)
 	     )
 	true
 	true false))
