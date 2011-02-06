@@ -68,6 +68,7 @@
 	  classpathref="android.target.classpath"
 	  classpath="${clojure-jar}:${extensible.classpath}:${clj-android-jar}:${source.absolute.dir}:${out.classes.absolute.dir}">
       <sysproperty key="clojure.compile.path" value="${out.classes.absolute.dir}"/>
+      <arg value="com.berthartm.android.RevisedCommonLectionary"/>
       <arg value="com.berthartm.android.LectionaryCalcs"/>
       <arg value="com.berthartm.android.Lectionary"/>
     </java>

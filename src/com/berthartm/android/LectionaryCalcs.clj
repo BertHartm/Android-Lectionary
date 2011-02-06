@@ -1,8 +1,5 @@
 (ns com.berthartm.android.LectionaryCalcs
-  (:gen-class
-   :methods [[Easter [Integer] java.util.GregorianCalendar]
-	     [ChristTheKing [Integer] java.util.GregorianCalendar]
-	     [liturgicalYear [java.util.GregorianCalendar] clojure.lang.Keyword]]))
+  (:import (java.util GregorianCalendar)))
 
 ; Knuth's version of the Lilius and Clavius method of calculating Easter (post-1582)
 ; as found on tAOCP Volume 1 1.3.2 Question 14 (pp. 159 - 160 in my edition)
@@ -22,21 +19,21 @@
 (defn EasterSunday [year] (let [FM (EasterFullMoon year)]
 			    (- (+ FM 7) (mod (+ (EasterD year) FM) 7))))
 ; memoize EasterSunday, not Easter, as we want Easter to return a new Calendar instance
-(defn -Easter [this year] (let [ES (EasterSunday year)]
-			    (cond (> ES 31) (new java.util.GregorianCalendar year 3 (- ES 31)) ; April
-				  true (new java.util.GregorianCalendar year 2 ES)))) ; March
+(defn Easter [year] (let [ES (EasterSunday year)]
+			    (cond (> ES 31) (new GregorianCalendar year 3 (- ES 31)) ; April
+				  true (new GregorianCalendar year 2 ES)))) ; March
 
-(defn -ChristTheKing [this year]
-  (let [fifthWeek (new java.util.GregorianCalendar year 10 20)]
-    (let [DoW (.get fifthWeek java.util.GregorianCalendar/DAY_OF_WEEK)]
+(defn ChristTheKing [year]
+  (let [fifthWeek (new GregorianCalendar year 10 20)]
+    (let [DoW (.get fifthWeek GregorianCalendar/DAY_OF_WEEK)]
       (cond (= DoW 1) fifthWeek ; Sunday the 20th, return that
-	    true (doto fifthWeek (.add java.util.GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
+	    true (doto fifthWeek (.add GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
 	    ))))
 
-(defn -liturgicalYear [this date]
-  (let [year (.get date java.util.GregorianCalendar/YEAR)]
+(defn liturgicalYear [date]
+  (let [year (.get date GregorianCalendar/YEAR)]
     ; the first day of the new year is the Wed. before ChristTheKing Sunday
-    (cond (.before date (doto (-ChristTheKing this year) (.add java.util.GregorianCalendar/DATE -4)))
+    (cond (.before date (doto (ChristTheKing year) (.add GregorianCalendar/DATE -4)))
 	  (nth '(:A :B :C) (mod (- year 1) 3))
 	  true ; else, we're that wednesday or after
 	  (nth '(:A :B :C) (mod year 3))
