@@ -3,7 +3,8 @@
    (:require [com.berthartm.android.LectionaryCalcs :as LC])
    (:use com.berthartm.android.RevisedCommonLectionary)
    (:import (com.berthartm.android.Lectionary R$layout R$id))
-   (:import (java.util GregorianCalendar))
+   (:import (java.util GregorianCalendar)
+	    (android.widget ArrayAdapter))
    )
 
 (defn calcHolidays [year]
@@ -54,22 +55,36 @@
 			  (+ (* 7 (+ (last (first liturgicalDay)) ; Seasonal week offset
 				     (second liturgicalDay))) ; this day's week offset
 			     (cond (= (.get xmas GregorianCalendar/DAY_OF_WEEK) 1) -7
-				   true (- 1 (.get xmas GregorianCalendar/DAY_OF_WEEK))
+				   :else (- 1 (.get xmas GregorianCalendar/DAY_OF_WEEK))
 				   ) ; find the Sunday (Prior, so 1st sunday of X can be a '1' in the declaration)
 			     (nth liturgicalDay 2)))) ; day offset (Sunday reading, Monday reading, etc.)
 		  date)
 	       )
 	  true
-	  true false))) ; base case, this day does not apply
+	  :else false))) ; base case, this day does not apply
 
+
+(defmacro on-item-click [view handler]
+  "Attach a item click listener to a view. The handler form is provided 'view as a reference to the calling view."
+  `(.setOnItemClickListener ~view (proxy [android.widget.AdapterView$OnItemClickListener] []
+				    (onItemClick [~'parent ~'view ~'pos ~'id] (boolean ~handler)))))
 
 (defactivity Main
   (:create (.setContentView context R$layout/main)
-	   (let [tv (view-by-id R$id/holiday_info) hol (view-by-id R$id/holiday_list)]
-	     ;(.setText tv (calcHolidays (.get (new GregorianCalendar) GregorianCalendar/YEAR)))
-	     (on-click (view-by-id R$id/date_button)
-		       (let [dp (view-by-id R$id/main_date)]
-			 ;(.setText tv (calcHolidays (.getYear dp)))
-			 (.setText hol (apply str (interpose "\n" (map last (filter (fn [possibleDay] (applicableDay possibleDay (new GregorianCalendar (.getYear dp) (.getMonth dp) (.getDayOfMonth dp)))) bigList)))))
-			 )))
+	   (on-click (view-by-id R$id/date_button)
+		     (let [dp (view-by-id R$id/main_date)]
+		       (.setAdapter (view-by-id R$id/holiday_list)
+					(new ArrayAdapter context android.R$layout/simple_list_item_1
+					     (into-array
+					      (map
+					       #(nth % (- (count %) 2))
+					       (filter (fn [possibleDay]
+							 (applicableDay possibleDay
+									(new GregorianCalendar (.getYear dp)
+									     (.getMonth dp)
+									     (.getDayOfMonth dp))))
+						       bigList)))))
+		       ))
+	   (on-item-click (view-by-id R$id/holiday_list)
+			  (.setText (view-by-id R$id/notice) "click"))
 	   ))

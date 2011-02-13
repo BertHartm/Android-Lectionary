@@ -16,14 +16,15 @@
      android:text="@string/update"
      />
   <TextView
-     android:id="@+id/holiday_info"
+     android:id="@+id/notice"
      android:layout_width="fill_parent" 
      android:layout_height="wrap_content" 
      />
-  <TextView
+  <ListView
      android:id="@+id/holiday_list"
      android:layout_width="fill_parent"
-     android:layout_height="wrap_content"
+     android:layout_height="fill_parent"
+     android:choiceMode="singleChoice"
      />
 </LinearLayout>
 
