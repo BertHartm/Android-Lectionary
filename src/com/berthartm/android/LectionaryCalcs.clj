@@ -12,22 +12,22 @@
 (defn Epact [year] (let [E (EasterE year)]
 		     (cond (= E 24) (+ E 1)
 			   (and (= E 25) (> (GoldenNumber year) 11)) (+ E 1)
-			   true E)))
+			   :else E)))
 (defn EasterFullMoon [year] (let [E (- 44 (Epact year))] 
 			      (cond (< E 21) (+ E 30)
-				    true E)))
+				    :else E)))
 (defn EasterSunday [year] (let [FM (EasterFullMoon year)]
 			    (- (+ FM 7) (mod (+ (EasterD year) FM) 7))))
 ; memoize EasterSunday, not Easter, as we want Easter to return a new Calendar instance
 (defn Easter [year] (let [ES (EasterSunday year)]
 			    (cond (> ES 31) (new GregorianCalendar year 3 (- ES 31)) ; April
-				  true (new GregorianCalendar year 2 ES)))) ; March
+				  :else (new GregorianCalendar year 2 ES)))) ; March
 
 (defn ChristTheKing [year]
   (let [fifthWeek (new GregorianCalendar year 10 20)]
     (let [DoW (.get fifthWeek GregorianCalendar/DAY_OF_WEEK)]
       (cond (= DoW 1) fifthWeek ; Sunday the 20th, return that
-	    true (doto fifthWeek (.add GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
+	    :else (doto fifthWeek (.add GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
 	    ))))
 
 (defn liturgicalYear [date]
@@ -35,7 +35,7 @@
     ; the first day of the new year is the Wed. before ChristTheKing Sunday
     (cond (.before date (doto (ChristTheKing year) (.add GregorianCalendar/DATE -4)))
 	  (nth '(:A :B :C) (mod (- year 1) 3))
-	  true ; else, we're that wednesday or after
+	  :else ; else, we're that wednesday or after
 	  (nth '(:A :B :C) (mod year 3))
 	  )))
     

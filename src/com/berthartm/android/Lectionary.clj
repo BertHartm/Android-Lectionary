@@ -25,7 +25,7 @@
 	litYear (LC/liturgicalYear date)
 	xmas (cond (< (.get date GregorianCalendar/MONTH) 3)
 		   (new GregorianCalendar (- year 1) 11 25)
-		   true (new GregorianCalendar year 11 25))]
+		   :else (new GregorianCalendar year 11 25))]
     (cond (and (= (ffirst liturgicalDay) :Date)
 	       (= (nth liturgicalDay 1) (+ (.get date GregorianCalendar/MONTH) 1))
 	       (= (nth liturgicalDay 2) (.get date GregorianCalendar/DAY_OF_MONTH))
