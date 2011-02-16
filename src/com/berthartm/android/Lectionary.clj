@@ -12,7 +12,7 @@
   (def pentecost (doto (LC/Easter year) (.add GregorianCalendar/DATE 49))) ; 50th day of Easter
   (def ashWednesday (doto (LC/Easter year) (.add GregorianCalendar/DATE -46))) ; 40 days + 6 Sundays before Easter
   (def transfiguration (doto (LC/Easter year) (.add GregorianCalendar/DATE -49))) ; Sunday before Ash Wednesday
-  (def formatter (new java.text.SimpleDateFormat "MMM d"))
+  (def formatter (java.text.SimpleDateFormat. "MMM d"))
   (str "for " year
        "\nEaster is " (.format formatter (.getTime easter))
        "\nAsh Wednesday is " (.format formatter (.getTime ashWednesday))
@@ -25,39 +25,40 @@
   (let [year (.get date GregorianCalendar/YEAR)
 	litYear (LC/liturgicalYear date)
 	xmas (cond (< (.get date GregorianCalendar/MONTH) 3)
-		   (new GregorianCalendar (- year 1) 11 25)
-		   :else (new GregorianCalendar year 11 25))]
-    (cond (and (= (ffirst liturgicalDay) :Date)
-	       (= (nth liturgicalDay 1) (+ (.get date GregorianCalendar/MONTH) 1))
-	       (= (nth liturgicalDay 2) (.get date GregorianCalendar/DAY_OF_MONTH))
-	       (or (= (nth liturgicalDay 3) :*)
-		   (= (nth liturgicalDay 3) litYear)))
+		   (GregorianCalendar. (- year 1) 11 25)
+		   :else ( GregorianCalendar. year 11 25))]
+    (cond (and (= (:season liturgicalDay) :Date) ; todo: weekOffset and dayOffset don't make much sense as names for :Date
+	       (= (:weekOffset liturgicalDay) (+ (.get date GregorianCalendar/MONTH) 1))
+	       (= (:dayOffset liturgicalDay) (.get date GregorianCalendar/DAY_OF_MONTH))
+	       (or (= (:year liturgicalDay) :*)
+		   (= (:year liturgicalDay) litYear)))
 	  true
-	  (and (= (ffirst liturgicalDay) :Easter)
-	       (or (= (nth liturgicalDay 2) :*)
-		   (= (nth liturgicalDay 2) litYear))
+	  (and (= (:season liturgicalDay) :Easter)
+	       (or (= (:year liturgicalDay) :*)
+		   (= (:year liturgicalDay) litYear))
 	       (.before (doto (LC/Easter year) (.add GregorianCalendar/DATE -50))
 			date) ; transfiguration (day before)
 	       (.before date
 			(doto (LC/Easter year) (.add GregorianCalendar/DATE 50))) ; pentecost (day after)
-	       (= (doto (LC/Easter year) (.add GregorianCalendar/DATE (+ (last (first liturgicalDay)) (nth liturgicalDay 1)))) date)
+	       (= (doto (LC/Easter year) (.add GregorianCalendar/DATE (+ (:seasonalOffset liturgicalDay)
+									 (:weekOffset liturgicalDay)))) date)
 	       )
 	  true
-	  (and (= (ffirst liturgicalDay) :Christmas)
-	       (or (= (nth liturgicalDay 3) :*)
-		   (= (nth liturgicalDay 3) litYear))
+	  (and (= (:season liturgicalDay) :Christmas)
+	       (or (= (:year liturgicalDay) :*)
+		   (= (:year liturgicalDay) litYear))
 	       (or (.before date
 			    (doto (LC/Easter year) (.add GregorianCalendar/DATE -49))) ; transfiguration
 		   (.before (doto (LC/Easter year) (.add GregorianCalendar/DATE 49)) ; pentecost
 			    date))
 	       (= (doto xmas ; should be safe to use xmas, as it's all in one doto clause
 		    (.add GregorianCalendar/DATE
-			  (+ (* 7 (+ (last (first liturgicalDay)) ; Seasonal week offset
-				     (second liturgicalDay))) ; this day's week offset
+			  (+ (* 7 (+ (:seasonalOffset liturgicalDay)
+				     (:weekOffset liturgicalDay)))
 			     (cond (= (.get xmas GregorianCalendar/DAY_OF_WEEK) 1) -7
 				   :else (- 1 (.get xmas GregorianCalendar/DAY_OF_WEEK))
 				   ) ; find the Sunday (Prior, so 1st sunday of X can be a '1' in the declaration)
-			     (nth liturgicalDay 2)))) ; day offset (Sunday reading, Monday reading, etc.)
+			     (:dayOffset liturgicalDay)))) ; day offset (Sunday reading, Monday reading, etc.)
 		  date)
 	       )
 	  true
@@ -74,17 +75,16 @@
 	   (on-click (view-by-id R$id/date_button)
 		     (let [dp (view-by-id R$id/main_date)]
 		       (.setAdapter (view-by-id R$id/holiday_list)
-					(new ArrayAdapter context android.R$layout/simple_list_item_1
-					     (into-array
-					      (map
-					       #(nth % (- (count %) 2))
-					       (filter (fn [possibleDay]
-							 (applicableDay possibleDay
-									(new GregorianCalendar (.getYear dp)
-									     (.getMonth dp)
-									     (.getDayOfMonth dp))))
-						       bigList)))))
+				    (ArrayAdapter. context android.R$layout/simple_list_item_1
+						   (into-array
+						    (map :name
+							 (filter (fn [possibleDay]
+								   (applicableDay possibleDay
+										  (GregorianCalendar. (.getYear dp)
+												      (.getMonth dp)
+												      (.getDayOfMonth dp))))
+								 bigList)))))
 		       ))
 	   (on-item-click (view-by-id R$id/holiday_list)
-			  (.setText (view-by-id R$id/notice) "click"))
+			  (.setText (view-by-id R$id/notice) (str (.getItemAtPosition parent pos))))
 	   ))

@@ -15,11 +15,15 @@
 (def ChristTheKing '(:Christmas -5))
 (def Jan27 '(:Date 1 27))
 
-(def bigList '(
-	       ((:Date) 1 27 :A "Awesome Day" ())
-	       ((:Date) 1 1 :* "Name of Jesus" ())
-	       ((:Christmas -4) 1 0 :* "First Sunday of Advent" ())
-	       ((:Christmas 0) 1 0 :* "Christmas 1" ())
-	       ((:Christmas 0) 2 0 :* "Christmas 2" ())
-	       ((:Easter -49) 0 :A "Transfiguration" ())
+(defrecord readingList [season seasonalOffset weekOffset dayOffset year name readings] java.lang.Object
+  (toString [this] (:name this))
+  )
+
+(def bigList `(
+	       ~(readingList. :Date 0 1 27 :A "Awesome Day" ())
+	       ~(readingList. :Date 0 1 1 :* "Name of Jesus" ())
+	       ~(readingList. :Christmas -4 1 0 :* "First Sunday of Advent" ())
+	       ~(readingList. :Christmas 0 1 0 :* "Christmas 1" ())
+	       ~(readingList. :Christmas 0 2 0 :* "Christmas 2" ())
+	       ~(readingList. :Easter -49 0 0 :A "Transfiguration" ())
 	       ))

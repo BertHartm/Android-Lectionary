@@ -20,11 +20,11 @@
 			    (- (+ FM 7) (mod (+ (EasterD year) FM) 7))))
 ; memoize EasterSunday, not Easter, as we want Easter to return a new Calendar instance
 (defn Easter [year] (let [ES (EasterSunday year)]
-			    (cond (> ES 31) (new GregorianCalendar year 3 (- ES 31)) ; April
-				  :else (new GregorianCalendar year 2 ES)))) ; March
+			    (cond (> ES 31) (GregorianCalendar. year 3 (- ES 31)) ; April
+				  :else (GregorianCalendar. year 2 ES)))) ; March
 
 (defn ChristTheKing [year]
-  (let [fifthWeek (new GregorianCalendar year 10 20)]
+  (let [fifthWeek (GregorianCalendar. year 10 20)]
     (let [DoW (.get fifthWeek GregorianCalendar/DAY_OF_WEEK)]
       (cond (= DoW 1) fifthWeek ; Sunday the 20th, return that
 	    :else (doto fifthWeek (.add GregorianCalendar/DATE (- 8 DoW))) ; move to the next Sunday
