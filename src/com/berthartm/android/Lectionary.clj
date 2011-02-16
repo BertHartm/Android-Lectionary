@@ -77,14 +77,13 @@
 		       (.setAdapter (view-by-id R$id/holiday_list)
 				    (ArrayAdapter. context android.R$layout/simple_list_item_1
 						   (into-array
-						    (map :name
-							 (filter (fn [possibleDay]
-								   (applicableDay possibleDay
-										  (GregorianCalendar. (.getYear dp)
-												      (.getMonth dp)
-												      (.getDayOfMonth dp))))
-								 bigList)))))
+						    (filter (fn [possibleDay]
+							      (applicableDay possibleDay
+									     (GregorianCalendar. (.getYear dp)
+												 (.getMonth dp)
+												 (.getDayOfMonth dp))))
+							    bigList))))
 		       ))
 	   (on-item-click (view-by-id R$id/holiday_list)
-			  (.setText (view-by-id R$id/notice) (str (.getItemAtPosition parent pos))))
+			  (.setText (view-by-id R$id/notice) (str (:season (.getItemAtPosition parent pos)))))
 	   ))
